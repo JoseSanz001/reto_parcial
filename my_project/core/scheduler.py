@@ -56,7 +56,7 @@ class SchedulerSM2:
                 programacion.intervalo = int(programacion.intervalo * (programacion.ease_factor + 0.5))
             
             programacion.repeticiones += 1
-            programacion.ease_factor = min(2.5, programacion.ease_factor + 0.15)  # Aumentar facilidad (max 2.5)
+            programacion.ease_factor = min(3.5, programacion.ease_factor + 0.15)  # Aumentar facilidad (max 2.5)
         
         # Calcular la próxima fecha de estudio
         programacion.proximo_estudio = date.today() + timedelta(days=programacion.intervalo)
