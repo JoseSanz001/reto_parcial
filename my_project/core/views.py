@@ -80,7 +80,10 @@ def dashboard(request):
     """
     Muestra estadísticas generales del usuario: barajas, tarjetas estudiadas, racha, etc.
     """
+    # Obtener todas las barajas del usuario
     barajas = Baraja.objects.filter(propietario=request.user)
+    
+    # Total de tarjetas en todas las barajas
     total_tarjetas = Tarjeta.objects.filter(baraja__propietario=request.user).count()
     
     # Tarjetas pendientes hoy (en todas las barajas)
@@ -90,18 +93,44 @@ def dashboard(request):
         proximo_estudio__lte=hoy
     ).count()
     
-    # Sesiones recientes
+    # Tarjetas estudiadas hoy (contar respuestas de hoy)
+    from datetime import datetime
+    tarjetas_estudiadas_hoy = HistorialRespuesta.objects.filter(
+        usuario=request.user,
+        fecha_respuesta__date=hoy
+    ).count()
+    
+    # Sesiones recientes (últimas 5)
     sesiones_recientes = Sesion.objects.filter(usuario=request.user).order_by('-fecha_inicio')[:5]
     
     # Obtener perfil del usuario para la racha
     perfil = request.user.perfil if hasattr(request.user, 'perfil') else None
     
+    # Calcular estadísticas de respuestas de hoy
+    respuestas_hoy = HistorialRespuesta.objects.filter(
+        usuario=request.user,
+        fecha_respuesta__date=hoy
+    )
+    
+    # Contar por tipo de calificación
+    otra_vez = respuestas_hoy.filter(calificacion=1).count()
+    dificil = respuestas_hoy.filter(calificacion=2).count()
+    bien = respuestas_hoy.filter(calificacion=3).count()
+    facil = respuestas_hoy.filter(calificacion=4).count()
+    
     context = {
         'total_barajas': barajas.count(),
         'total_tarjetas': total_tarjetas,
         'tarjetas_pendientes': tarjetas_pendientes,
+        'tarjetas_estudiadas_hoy': tarjetas_estudiadas_hoy,
         'sesiones_recientes': sesiones_recientes,
-        'racha_dias': perfil.racha_dias if perfil else 0
+        'racha_dias': perfil.racha_dias if perfil else 0,
+        'estadisticas_hoy': {
+            'otra_vez': otra_vez,
+            'dificil': dificil,
+            'bien': bien,
+            'facil': facil,
+        }
     }
     
     return render(request, 'core/dashboard.html', context)
