@@ -119,7 +119,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+# Configuración de archivos estáticos (CSS, JavaScript, imágenes del sitio)
+STATIC_URL = 'static/' 
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Carpeta donde se recopilan archivos estáticos en producción
+
+# Configuración de archivos de media (archivos subidos por usuarios)
+MEDIA_URL = '/media/'  # URL para acceder a archivos subidos
+MEDIA_ROOT = BASE_DIR / 'media'  # Carpeta donde se guardan archivos subidos
+
+# Configuración de login (redirige a dashboard después de login)
+LOGIN_URL = '/admin/login/'  # URL para hacer login si no está autenticado
+LOGIN_REDIRECT_URL = '/'  # Redirigir al dashboard después del login exitoso
+LOGOUT_REDIRECT_URL = '/admin/'  # Redirigir al admin después del logout
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
