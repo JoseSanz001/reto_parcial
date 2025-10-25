@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📊 Mi Dashboard</h1>
+    </div>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+<div class="row">
+    <!-- Total de barajas -->
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">📚 Total Barajas</h5>
+                <h2>{{ total_barajas }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total de tarjetas -->
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">🃏 Total Tarjetas</h5>
+                <h2>{{ total_tarjetas }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas pendientes hoy -->
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">⏰ Pendientes Hoy</h5>
+                <h2>{{ tarjetas_pendientes }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Racha de días -->
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">🔥 Racha</h5>
+                <h2>{{ racha_dias }} días</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones rápidas -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>🚀 Acciones Rápidas</h3>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Ver mis Barajas</h5>
+                <p class="card-text">Gestiona y estudia tus barajas de tarjetas.</p>
+                <a href="{% url 'core:lista_barajas' %}" class="btn btn-primary">Ir a Barajas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Panel de Administración</h5>
+                <p class="card-text">Crea barajas, tarjetas, clases y más.</p>
+                <a href="/admin/" class="btn btn-secondary">Ir al Admin</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sesiones recientes -->
+{% if sesiones_recientes %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>📖 Sesiones Recientes</h3>
+        <div class="card">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Baraja</th>
+                            <th>Fecha</th>
+                            <th>Duración</th>
+                            <th>Tarjetas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sesion in sesiones_recientes %}
+                        <tr>
+                            <td>{{ sesion.baraja.titulo }}</td>
+                            <td>{{ sesion.fecha_inicio|date:"d/m/Y H:i" }}</td>
+                            <td>{{ sesion.duracion_minutos }} min</td>
+                            <td>{{ sesion.tarjetas_estudiadas }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
