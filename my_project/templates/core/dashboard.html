@@ -52,6 +52,41 @@
     </div>
 </div>
 
+<!-- Nueva fila: Estadísticas de hoy -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📊 Resumen de Hoy</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ tarjetas_estudiadas_hoy }}</h3>
+                        <p class="text-muted">Tarjetas Estudiadas</p>
+                    </div>
+                    <div class="col-md-2">
+                        <h3 class="text-danger">{{ estadisticas_hoy.otra_vez }}</h3>
+                        <p class="text-muted">❌ Otra vez</p>
+                    </div>
+                    <div class="col-md-2">
+                        <h3 class="text-warning">{{ estadisticas_hoy.dificil }}</h3>
+                        <p class="text-muted">😐 Difícil</p>
+                    </div>
+                    <div class="col-md-2">
+                        <h3 class="text-success">{{ estadisticas_hoy.bien }}</h3>
+                        <p class="text-muted">✓ Bien</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ estadisticas_hoy.facil }}</h3>
+                        <p class="text-muted">⭐ Fácil</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Acciones rápidas -->
 <div class="row mt-4">
     <div class="col-12">
