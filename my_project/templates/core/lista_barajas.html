@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mis Barajas - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📚 Mis Barajas</h1>
+        <a href="/admin/core/baraja/add/" class="btn btn-success mb-3">➕ Crear Nueva Baraja</a>
+    </div>
+</div>
+
+<!-- Lista de barajas -->
+<div class="row">
+    {% if barajas %}
+        {% for baraja in barajas %}
+        <div class="col-md-4">
+            <div class="card">
+                <!-- Imagen de portada si existe -->
+                {% if baraja.portada %}
+                <img src="{{ baraja.portada.url }}" class="card-img-top" alt="{{ baraja.titulo }}">
+                {% else %}
+                <div class="card-img-top bg-primary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <h1>📚</h1>
+                </div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ baraja.titulo }}</h5>
+                    <p class="card-text">{{ baraja.descripcion|truncatewords:20 }}</p>
+                    
+                    <!-- Información de la baraja -->
+                    <p class="text-muted small">
+                        🃏 {{ baraja.tarjetas.count }} tarjeta{{ baraja.tarjetas.count|pluralize }}
+                        <br>
+                        👁️ {{ baraja.get_visibilidad_display }}
+                        <br>
+                        📅 {{ baraja.fecha_creacion|date:"d/m/Y" }}
+                    </p>
+                    
+                    <!-- Botones de acción -->
+                    <a href="{% url 'core:estudiar_baraja' baraja.id %}" class="btn btn-primary btn-sm">
+                        📖 Estudiar
+                    </a>
+                    <a href="/admin/core/baraja/{{ baraja.id }}/change/" class="btn btn-secondary btn-sm">
+                        ✏️ Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Mensaje si no hay barajas -->
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <h4 class="alert-heading">📭 No tienes barajas aún</h4>
+                <p>Crea tu primera baraja para comenzar a estudiar.</p>
+                <hr>
+                <a href="/admin/core/baraja/add/" class="btn btn-success">➕ Crear Primera Baraja</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Botón para volver al dashboard -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">← Volver al Dashboard</a>
+    </div>
+</div>
+{% endblock %}
