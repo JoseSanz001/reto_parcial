@@ -84,3 +84,91 @@ class Sesion(models.Model):
     class Meta:
         verbose_name = 'Sesión'
         verbose_name_plural = 'Sesiones'
+
+# Modelo de Perfil de Usuario (extiende el User de Django)
+class PerfilUsuario(models.Model):
+    ROL_CHOICES = [
+        ('estudiante', 'Estudiante'),
+        ('docente', 'Docente/Coach'),
+        ('colaborador', 'Colaborador/Editor'),
+        ('administrador', 'Administrador'),
+    ]
+    
+    # Relación uno a uno con el usuario de Django
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    rol = models.CharField(max_length=20, choices=ROL_CHOICES, default='estudiante')
+    idioma = models.CharField(max_length=10, default='es')  # Idioma preferido
+    modo_oscuro = models.BooleanField(default=False)  # Preferencia de tema
+    racha_dias = models.IntegerField(default=0)  # Días consecutivos estudiando
+    
+    def __str__(self):
+        return f"{self.usuario.username} - {self.rol}"
+    
+    class Meta:
+        verbose_name = 'Perfil de Usuario'
+        verbose_name_plural = 'Perfiles de Usuario'
+
+
+# Modelo de Clase/Grupo (para docentes)
+class Clase(models.Model):
+    nombre = models.CharField(max_length=200)  # Nombre de la clase
+    descripcion = models.TextField(blank=True)
+    docente = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clases_docente')  # Profesor que crea la clase
+    alumnos = models.ManyToManyField(User, related_name='clases_alumno', blank=True)  # Estudiantes inscritos
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    codigo_invitacion = models.CharField(max_length=10, unique=True, blank=True)  # Código para unirse a la clase
+    
+    def __str__(self):
+        return f"{self.nombre} - Prof. {self.docente.username}"
+    
+    class Meta:
+        verbose_name = 'Clase'
+        verbose_name_plural = 'Clases'
+
+
+# Modelo de Tarea (asignaciones de barajas a clases)
+class Tarea(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('en_progreso', 'En Progreso'),
+        ('completada', 'Completada'),
+        ('atrasada', 'Atrasada'),
+    ]
+    
+    clase = models.ForeignKey(Clase, on_delete=models.CASCADE, related_name='tareas')  # Clase a la que pertenece
+    baraja = models.ForeignKey(Baraja, on_delete=models.CASCADE, related_name='tareas')  # Baraja asignada
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True)
+    fecha_limite = models.DateField()  # Fecha límite para completar
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.clase.nombre}"
+    
+    class Meta:
+        verbose_name = 'Tarea'
+        verbose_name_plural = 'Tareas'
+
+
+# Modelo de Historial de Respuestas (para tracking del scheduler SM-2)
+class HistorialRespuesta(models.Model):
+    CALIFICACION_CHOICES = [
+        (1, 'Otra vez'),
+        (2, 'Difícil'),
+        (3, 'Bien'),
+        (4, 'Fácil'),
+    ]
+    
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='historial')  # Usuario que estudió
+    tarjeta = models.ForeignKey(Tarjeta, on_delete=models.CASCADE, related_name='historial')  # Tarjeta estudiada
+    calificacion = models.IntegerField(choices=CALIFICACION_CHOICES)  # Qué tan bien recordó (1-4)
+    fecha_respuesta = models.DateTimeField(auto_now_add=True)  # Cuándo respondió
+    tiempo_respuesta_segundos = models.IntegerField(default=0)  # Cuánto tardó en responder
+    
+    def __str__(self):
+        return f"{self.usuario.username} - {self.tarjeta.anverso[:30]} - {self.get_calificacion_display()}"
+    
+    class Meta:
+        verbose_name = 'Historial de Respuesta'
+        verbose_name_plural = 'Historial de Respuestas'
+        ordering = ['-fecha_respuesta']  # Ordenar por más reciente primero
