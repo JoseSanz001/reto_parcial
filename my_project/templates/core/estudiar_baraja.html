@@ -1,0 +1,155 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Estudiar {{ baraja.titulo }} - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📖 Estudiando: {{ baraja.titulo }}</h1>
+        <p class="lead">{{ baraja.descripcion }}</p>
+    </div>
+</div>
+
+<!-- Contador de tarjetas pendientes -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <strong>Tarjetas pendientes hoy:</strong> {{ total_pendientes }}
+        </div>
+    </div>
+</div>
+
+{% if tarjetas %}
+    <!-- Área de estudio de tarjetas -->
+    <div id="estudio-container">
+        {% for tarjeta in tarjetas %}
+        <div class="tarjeta-card card mb-4" data-tarjeta-id="{{ tarjeta.id }}" {% if not forloop.first %}style="display:none;"{% endif %}>
+            <div class="card-header bg-primary text-white">
+                <h5>Tarjeta {{ forloop.counter }} de {{ total_pendientes }}</h5>
+                <small>Tipo: {{ tarjeta.get_tipo_display }}</small>
+            </div>
+            
+            <div class="card-body text-center" style="min-height: 300px;">
+                <!-- Anverso de la tarjeta (siempre visible) -->
+                <div class="anverso mb-4">
+                    <h2 class="mt-5">{{ tarjeta.anverso }}</h2>
+                    {% if tarjeta.imagen %}
+                    <img src="{{ tarjeta.imagen.url }}" class="img-fluid mt-3" style="max-height: 300px;" alt="Imagen">
+                    {% endif %}
+                </div>
+                
+                <!-- Reverso de la tarjeta (oculto inicialmente) -->
+                <div class="reverso" style="display:none;">
+                    <hr>
+                    <h3 class="text-success">✓ Respuesta:</h3>
+                    <h2>{{ tarjeta.reverso }}</h2>
+                    {% if tarjeta.extra %}
+                    <p class="text-muted mt-3">{{ tarjeta.extra }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Botón para mostrar respuesta -->
+                <button class="btn btn-lg btn-primary mostrar-respuesta mt-4">
+                    👁️ Mostrar Respuesta
+                </button>
+                
+                <!-- Botones de calificación (ocultos inicialmente) -->
+                <div class="botones-calificacion mt-4" style="display:none;">
+                    <h5 class="mb-3">¿Qué tan bien recordaste esta tarjeta?</h5>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-danger btn-calificar" data-calificacion="1">
+                            ❌ Otra vez
+                        </button>
+                        <button class="btn btn-warning btn-calificar" data-calificacion="2">
+                            😐 Difícil
+                        </button>
+                        <button class="btn btn-success btn-calificar" data-calificacion="3">
+                            ✓ Bien
+                        </button>
+                        <button class="btn btn-primary btn-calificar" data-calificacion="4">
+                            ⭐ Fácil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Mensaje de finalización (oculto inicialmente) -->
+        <div id="mensaje-completado" class="card" style="display:none;">
+            <div class="card-body text-center">
+                <h2 class="text-success">🎉 ¡Felicidades!</h2>
+                <p class="lead">Has completado todas las tarjetas pendientes para hoy.</p>
+                <a href="{% url 'core:lista_barajas' %}" class="btn btn-primary">Volver a Mis Barajas</a>
+                <a href="{% url 'core:dashboard' %}" class="btn btn-secondary">Ir al Dashboard</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var tarjetaActualIndex = 0;
+        var totalTarjetas = {{ total_pendientes }};
+        var tarjetasCards = document.querySelectorAll('.tarjeta-card');
+        var tiempoInicio = Date.now();
+        
+        // Función para mostrar la respuesta
+        document.querySelectorAll('.mostrar-respuesta').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var card = this.closest('.tarjeta-card');
+                card.querySelector('.reverso').style.display = 'block';
+                card.querySelector('.botones-calificacion').style.display = 'block';
+                this.style.display = 'none';
+            });
+        });
+        
+        // Función para calificar una tarjeta
+        document.querySelectorAll('.btn-calificar').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var calificacion = this.dataset.calificacion;
+                var card = this.closest('.tarjeta-card');
+                var tarjetaId = card.dataset.tarjetaId;
+                var tiempoRespuesta = Math.floor((Date.now() - tiempoInicio) / 1000);
+                
+                // Enviar calificación al servidor
+                fetch('/calificar/' + tarjetaId + '/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: 'calificacion=' + calificacion + '&tiempo=' + tiempoRespuesta
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        card.style.display = 'none';
+                        tarjetaActualIndex++;
+                        
+                        if (tarjetaActualIndex < totalTarjetas) {
+                            tarjetasCards[tarjetaActualIndex].style.display = 'block';
+                            tiempoInicio = Date.now();
+                        } else {
+                            document.getElementById('mensaje-completado').style.display = 'block';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
+{% else %}
+    <!-- Mensaje si no hay tarjetas pendientes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">✅ ¡Todo al día!</h4>
+                <p>No tienes tarjetas pendientes para estudiar hoy en esta baraja.</p>
+                <hr>
+                <a href="{% url 'core:lista_barajas' %}" class="btn btn-primary">Volver a Mis Barajas</a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
