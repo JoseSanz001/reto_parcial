@@ -39,11 +39,15 @@
                     </p>
                     
                     <!-- Botones de acción -->
-                    <a href="{% url 'core:estudiar_baraja' baraja.id %}" class="btn btn-primary btn-sm">
+                    <!-- Botones de acción -->
+                    <a href="{% url 'core:estudiar_baraja' baraja.id %}" class="btn btn-sm btn-primary">
                         📖 Estudiar
                     </a>
-                    <a href="/admin/core/baraja/{{ baraja.id }}/change/" class="btn btn-secondary btn-sm">
+                    <a href="/admin/core/baraja/{{ baraja.id }}/change/" class="btn btn-sm btn-secondary">
                         ✏️ Editar
+                    </a>
+                    <a href="{% url 'core:exportar_csv' baraja.id %}" class="btn btn-sm btn-success">
+                        📤 Exportar CSV
                     </a>
                 </div>
             </div>
