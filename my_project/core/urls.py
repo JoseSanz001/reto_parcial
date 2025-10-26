@@ -19,4 +19,6 @@ urlpatterns = [
     path('calificar/<int:tarjeta_id>/', views.calificar_respuesta, name='calificar_respuesta'),
     # ruta para hacer la busqueda de tarjetas
     path('buscar/', views.buscar_tarjetas, name='buscar_tarjetas'),
+    # ruta para importar archivos CSV
+    path('importar-csv/', views.importar_csv, name='importar_csv'),
 ]
