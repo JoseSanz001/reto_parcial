@@ -17,4 +17,6 @@ urlpatterns = [
     
     # Calificar una respuesta (AJAX) - http://localhost:8000/calificar/1/
     path('calificar/<int:tarjeta_id>/', views.calificar_respuesta, name='calificar_respuesta'),
+    # ruta para hacer la busqueda de tarjetas
+    path('buscar/', views.buscar_tarjetas, name='buscar_tarjetas'),
 ]
