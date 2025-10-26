@@ -4,6 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from datetime import date
 from .models import Baraja, Clase, Tarea, Tarjeta, Programacion, HistorialRespuesta, Sesion
 from .scheduler import SchedulerSM2
+from .decorators import rol_requerido, solo_docente
 
 # Vista principal - Lista de barajas del usuario
 @login_required  # Requiere que el usuario esté autenticado
@@ -397,6 +398,7 @@ def unirse_clase(request):
 
 # Vista para ver progreso de alumnos (solo docentes)
 @login_required
+@solo_docente
 def progreso_clase(request, clase_id):
     """
     Muestra el progreso de todos los alumnos en las tareas de la clase.
