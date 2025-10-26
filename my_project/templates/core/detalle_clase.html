@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ clase.nombre }} - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            {% if es_docente %}👨‍🏫{% else %}🎓{% endif %} {{ clase.nombre }}
+        </h1>
+        <p class="lead">{{ clase.descripcion }}</p>
+    </div>
+</div>
+
+<!-- Información de la clase -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📊 Información</h5>
+                <p class="mb-1"><strong>Docente:</strong> {{ clase.docente.username }}</p>
+                <p class="mb-1"><strong>Alumnos:</strong> {{ clase.alumnos.count }}</p>
+                <p class="mb-1"><strong>Tareas:</strong> {{ tareas.count }}</p>
+                {% if es_docente %}
+                <p class="mb-0">
+                    <strong>Código:</strong> 
+                    <span class="badge bg-success">{{ clase.codigo_invitacion }}</span>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">👥 Alumnos Inscritos</h5>
+                {% if clase.alumnos.all %}
+                <div class="d-flex flex-wrap gap-2">
+                    {% for alumno in clase.alumnos.all %}
+                    <span class="badge bg-primary">{{ alumno.username }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No hay alumnos inscritos aún</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botones de acción para docentes -->
+{% if es_docente %}
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="/admin/core/tarea/add/?clase={{ clase.id }}" class="btn btn-success">
+            ➕ Crear Nueva Tarea
+        </a>
+        <a href="{% url 'core:progreso_clase' clase.id %}" class="btn btn-info">
+            📊 Ver Progreso de Alumnos
+        </a>
+        <a href="/admin/core/clase/{{ clase.id }}/change/" class="btn btn-secondary">
+            ✏️ Editar Clase
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Lista de tareas -->
+<div class="row">
+    <div class="col-12">
+        <h3>📋 Tareas Asignadas</h3>
+    </div>
+    
+    {% if tareas %}
+        {% for tarea in tareas %}
+        <div class="col-md-6 mb-3">
+            <div class="card {% if tarea.fecha_limite < today %}border-danger{% endif %}">
+                <div class="card-header {% if tarea.fecha_limite < today %}bg-danger text-white{% else %}bg-light{% endif %}">
+                    <h5 class="mb-0">
+                        {{ tarea.titulo }}
+                        {% if tarea.fecha_limite < today %}
+                        <span class="badge bg-white text-danger float-end">⏰ Atrasada</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ tarea.descripcion }}</p>
+                    
+                    <p class="mb-2">
+                        <strong>📚 Baraja:</strong> {{ tarea.baraja.titulo }}
+                        <br>
+                        <strong>🃏 Tarjetas:</strong> {{ tarea.baraja.tarjetas.count }}
+                        <br>
+                        <strong>📅 Fecha límite:</strong> 
+                        <span class="{% if tarea.fecha_limite < today %}text-danger{% endif %}">
+                            {{ tarea.fecha_limite|date:"d/m/Y" }}
+                        </span>
+                        <br>
+                        <small class="text-muted">Asignada: {{ tarea.fecha_creacion|date:"d/m/Y H:i" }}</small>
+                    </p>
+                    
+                    <!-- Botones según el rol -->
+                    {% if es_alumno %}
+                    <a href="{% url 'core:estudiar_baraja' tarea.baraja.id %}" class="btn btn-primary btn-sm">
+                        📖 Estudiar Baraja
+                    </a>
+                    {% endif %}
+                    
+                    {% if es_docente %}
+                    <a href="/admin/core/tarea/{{ tarea.id }}/change/" class="btn btn-secondary btn-sm">
+                        ✏️ Editar Tarea
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5>📭 No hay tareas asignadas</h5>
+                {% if es_docente %}
+                <p>Crea la primera tarea para esta clase.</p>
+                <a href="/admin/core/tarea/add/?clase={{ clase.id }}" class="btn btn-success">➕ Crear Primera Tarea</a>
+                {% else %}
+                <p>Tu profesor aún no ha asignado tareas.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Botón para volver -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{% url 'core:mis_clases' %}" class="btn btn-outline-secondary">← Volver a Mis Clases</a>
+    </div>
+</div>
+{% endblock %}

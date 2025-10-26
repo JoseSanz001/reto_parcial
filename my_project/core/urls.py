@@ -26,4 +26,11 @@ urlpatterns = [
 
     # Exportacion de CSV
     path('exportar-csv/<int:baraja_id>/', views.exportar_csv, name='exportar_csv'),
+
+        # URLs del sistema de clases
+    path('clases/', views.mis_clases, name='mis_clases'),
+    path('clases/<int:clase_id>/', views.detalle_clase, name='detalle_clase'),
+    path('clases/<int:clase_id>/progreso/', views.progreso_clase, name='progreso_clase'),
+    path('unirse-clase/', views.unirse_clase, name='unirse_clase'),
+
 ]

@@ -1,0 +1,106 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Unirse a Clase - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">➕ Unirse a una Clase</h1>
+    </div>
+</div>
+
+<!-- Mensajes de éxito o error -->
+{% if exito %}
+<div class="alert alert-success alert-dismissible fade show">
+    <strong>✅ {{ exito }}</strong>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <hr>
+    <a href="{% url 'core:detalle_clase' clase.id %}" class="btn btn-success">Ver Clase</a>
+    <a href="{% url 'core:mis_clases' %}" class="btn btn-secondary">Mis Clases</a>
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show">
+    <strong>❌ Error:</strong> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<!-- Instrucciones -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📋 ¿Cómo funciona?</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>Tu profesor te proporcionará un <strong>código de invitación</strong> único</li>
+                    <li>Ingresa el código en el formulario de abajo</li>
+                    <li>Automáticamente serás inscrito en la clase</li>
+                    <li>Podrás ver y completar las tareas asignadas</li>
+                </ol>
+                <p class="mb-0 text-muted"><small>💡 El código suele tener 6-10 caracteres alfanuméricos</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario para unirse -->
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Ingresar Código de Clase</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="codigo" class="form-label">Código de Invitación *</label>
+                        <input type="text" 
+                               class="form-control form-control-lg text-center" 
+                               id="codigo" 
+                               name="codigo" 
+                               placeholder="Ej: ABC123"
+                               style="text-transform: uppercase; letter-spacing: 2px;"
+                               required
+                               autofocus>
+                        <small class="text-muted">Ingresa el código que te proporcionó tu profesor</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            ➕ Unirse a la Clase
+                        </button>
+                        <a href="{% url 'core:mis_clases' %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ejemplo visual -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5>📌 Ejemplo de Código de Invitación</h5>
+                <div class="mt-3">
+                    <span class="badge bg-success" style="font-size: 2rem; letter-spacing: 3px; padding: 15px 30px;">
+                        ENG101
+                    </span>
+                </div>
+                <p class="text-muted mt-3 mb-0">
+                    <small>Los códigos pueden variar en formato según el profesor</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

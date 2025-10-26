@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from datetime import date
-from .models import Baraja, Tarjeta, Programacion, HistorialRespuesta, Sesion
+from .models import Baraja, Clase, Tarea, Tarjeta, Programacion, HistorialRespuesta, Sesion
 from .scheduler import SchedulerSM2
 
 # Vista principal - Lista de barajas del usuario
@@ -302,3 +302,147 @@ def exportar_csv(request, baraja_id):
         ])
     
     return response
+
+# ==================== VISTAS PARA SISTEMA DE CLASES ====================
+
+# Vista para listar clases del docente
+@login_required
+def mis_clases(request):
+    """
+    Muestra las clases donde el usuario es docente o alumno.
+    """
+    # Clases donde soy docente
+    clases_docente = Clase.objects.filter(docente=request.user)
+    
+    # Clases donde soy alumno
+    clases_alumno = Clase.objects.filter(alumnos=request.user)
+    
+    context = {
+        'clases_docente': clases_docente,
+        'clases_alumno': clases_alumno,
+    }
+    
+    return render(request, 'core/mis_clases.html', context)
+
+
+# Vista para ver detalles de una clase
+@login_required
+def detalle_clase(request, clase_id):
+    """
+    Muestra los detalles de una clase: alumnos, tareas, etc.
+    """
+    from django.shortcuts import get_object_or_404
+    
+    clase = get_object_or_404(Clase, id=clase_id)
+    
+    # Verificar que el usuario es docente o alumno de la clase
+    es_docente = clase.docente == request.user
+    es_alumno = request.user in clase.alumnos.all()
+    
+    if not (es_docente or es_alumno):
+        return HttpResponse('No tienes acceso a esta clase', status=403)
+    
+    # Obtener tareas de la clase
+    tareas = Tarea.objects.filter(clase=clase).order_by('-fecha_creacion')
+    
+    context = {
+        'clase': clase,
+        'es_docente': es_docente,
+        'es_alumno': es_alumno,
+        'tareas': tareas,
+    }
+    
+    return render(request, 'core/detalle_clase.html', context)
+
+
+# Vista para unirse a una clase con código
+@login_required
+def unirse_clase(request):
+    """
+    Permite a un alumno unirse a una clase usando el código de invitación.
+    """
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo', '').strip().upper()
+        
+        try:
+            clase = Clase.objects.get(codigo_invitacion=codigo)
+            
+            # Verificar que no sea el docente
+            if clase.docente == request.user:
+                return render(request, 'core/unirse_clase.html', {
+                    'error': 'No puedes unirte a tu propia clase como alumno'
+                })
+            
+            # Verificar que no esté ya inscrito
+            if request.user in clase.alumnos.all():
+                return render(request, 'core/unirse_clase.html', {
+                    'error': 'Ya estás inscrito en esta clase'
+                })
+            
+            # Agregar al alumno
+            clase.alumnos.add(request.user)
+            
+            return render(request, 'core/unirse_clase.html', {
+                'exito': f'¡Te has unido exitosamente a la clase "{clase.nombre}"!',
+                'clase': clase
+            })
+            
+        except Clase.DoesNotExist:
+            return render(request, 'core/unirse_clase.html', {
+                'error': 'Código de clase inválido'
+            })
+    
+    return render(request, 'core/unirse_clase.html', {})
+
+
+# Vista para ver progreso de alumnos (solo docentes)
+@login_required
+def progreso_clase(request, clase_id):
+    """
+    Muestra el progreso de todos los alumnos en las tareas de la clase.
+    Solo accesible para el docente.
+    """
+    from django.shortcuts import get_object_or_404
+    
+    clase = get_object_or_404(Clase, id=clase_id, docente=request.user)
+    
+    # Obtener todas las tareas de la clase
+    tareas = Tarea.objects.filter(clase=clase)
+    
+    # Obtener progreso de cada alumno
+    alumnos_progreso = []
+    
+    for alumno in clase.alumnos.all():
+        # Contar tarjetas estudiadas de cada tarea
+        progreso_tareas = []
+        
+        for tarea in tareas:
+            # Contar cuántas tarjetas de la baraja de la tarea ha estudiado el alumno
+            tarjetas_estudiadas = HistorialRespuesta.objects.filter(
+                usuario=alumno,
+                tarjeta__baraja=tarea.baraja,
+                fecha_respuesta__gte=tarea.fecha_creacion
+            ).values('tarjeta').distinct().count()
+            
+            total_tarjetas = tarea.baraja.tarjetas.count()
+            porcentaje = (tarjetas_estudiadas / total_tarjetas * 100) if total_tarjetas > 0 else 0
+            
+            progreso_tareas.append({
+                'tarea': tarea,
+                'estudiadas': tarjetas_estudiadas,
+                'total': total_tarjetas,
+                'porcentaje': round(porcentaje, 1)
+            })
+        
+        alumnos_progreso.append({
+            'alumno': alumno,
+            'progreso_tareas': progreso_tareas
+        })
+    
+    context = {
+        'clase': clase,
+        'tareas': tareas,
+        'alumnos_progreso': alumnos_progreso,
+    }
+    
+    return render(request, 'core/progreso_clase.html', context)

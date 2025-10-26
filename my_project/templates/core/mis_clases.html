@@ -1,0 +1,112 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Mis Clases - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">👥 Mis Clases</h1>
+    </div>
+</div>
+
+<!-- Clases donde soy DOCENTE -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h3>📚 Clases que Imparto (Docente)</h3>
+        <a href="/admin/core/clase/add/" class="btn btn-success mb-3">➕ Crear Nueva Clase</a>
+    </div>
+    
+    {% if clases_docente %}
+        {% for clase in clases_docente %}
+        <div class="col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ clase.nombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ clase.descripcion }}</p>
+                    
+                    <p class="mb-2">
+                        <strong>👥 Alumnos:</strong> {{ clase.alumnos.count }}
+                        <br>
+                        <strong>📋 Tareas:</strong> {{ clase.tareas.count }}
+                        <br>
+                        <strong>🔑 Código:</strong> <span class="badge bg-success">{{ clase.codigo_invitacion }}</span>
+                        <br>
+                        <small class="text-muted">Creada: {{ clase.fecha_creacion|date:"d/m/Y" }}</small>
+                    </p>
+                    
+                    <a href="{% url 'core:detalle_clase' clase.id %}" class="btn btn-primary btn-sm">
+                        👁️ Ver Detalles
+                    </a>
+                    <a href="{% url 'core:progreso_clase' clase.id %}" class="btn btn-info btn-sm">
+                        📊 Ver Progreso
+                    </a>
+                    <a href="/admin/core/clase/{{ clase.id }}/change/" class="btn btn-secondary btn-sm">
+                        ✏️ Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5>📭 No tienes clases como docente</h5>
+                <p>Crea tu primera clase para empezar a asignar tareas a tus alumnos.</p>
+                <a href="/admin/core/clase/add/" class="btn btn-success">➕ Crear Primera Clase</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Clases donde soy ALUMNO -->
+<div class="row">
+    <div class="col-12">
+        <h3>🎓 Clases en las que Estoy Inscrito (Alumno)</h3>
+        <a href="{% url 'core:unirse_clase' %}" class="btn btn-primary mb-3">➕ Unirse a una Clase</a>
+    </div>
+    
+    {% if clases_alumno %}
+        {% for clase in clases_alumno %}
+        <div class="col-md-6 mb-3">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">{{ clase.nombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ clase.descripcion }}</p>
+                    
+                    <p class="mb-2">
+                        <strong>👨‍🏫 Docente:</strong> {{ clase.docente.username }}
+                        <br>
+                        <strong>📋 Tareas:</strong> {{ clase.tareas.count }}
+                        <br>
+                        <small class="text-muted">Inscrito desde: {{ clase.fecha_creacion|date:"d/m/Y" }}</small>
+                    </p>
+                    
+                    <a href="{% url 'core:detalle_clase' clase.id %}" class="btn btn-success btn-sm">
+                        👁️ Ver Tareas
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h5>📭 No estás inscrito en ninguna clase</h5>
+                <p>Únete a una clase usando el código de invitación que te proporcionó tu profesor.</p>
+                <a href="{% url 'core:unirse_clase' %}" class="btn btn-primary">➕ Unirse a una Clase</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Botón para volver -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">← Volver al Dashboard</a>
+    </div>
+</div>
+{% endblock %}
