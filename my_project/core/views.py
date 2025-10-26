@@ -171,3 +171,92 @@ def buscar_tarjetas(request):
     }
     
     return render(request, 'core/buscar_tarjetas.html', context)
+
+# Vista para importar tarjetas desde CSV
+@login_required
+def importar_csv(request):
+    """
+    Importa tarjetas desde un archivo CSV.
+    Formato esperado: anverso,reverso,etiquetas,baraja_id
+    """
+    if request.method == 'POST':
+        import csv
+        from io import StringIO
+        
+        # Obtener el archivo subido
+        csv_file = request.FILES.get('archivo_csv')
+        baraja_id = request.POST.get('baraja_id')
+        
+        if not csv_file:
+            return render(request, 'core/importar_csv.html', {
+                'error': 'Por favor selecciona un archivo CSV',
+                'barajas': Baraja.objects.filter(propietario=request.user)
+            })
+        
+        if not baraja_id:
+            return render(request, 'core/importar_csv.html', {
+                'error': 'Por favor selecciona una baraja',
+                'barajas': Baraja.objects.filter(propietario=request.user)
+            })
+        
+        # Verificar que la baraja pertenece al usuario
+        try:
+            baraja = Baraja.objects.get(id=baraja_id, propietario=request.user)
+        except Baraja.DoesNotExist:
+            return render(request, 'core/importar_csv.html', {
+                'error': 'Baraja no encontrada',
+                'barajas': Baraja.objects.filter(propietario=request.user)
+            })
+        
+        # Leer el archivo CSV
+        try:
+            # Decodificar el archivo
+            file_data = csv_file.read().decode('utf-8')
+            csv_data = StringIO(file_data)
+            reader = csv.DictReader(csv_data)
+            
+            tarjetas_creadas = 0
+            errores = []
+            
+            # Procesar cada fila del CSV
+            for row_num, row in enumerate(reader, start=2):  # start=2 porque la fila 1 es el encabezado
+                try:
+                    anverso = row.get('anverso', '').strip()
+                    reverso = row.get('reverso', '').strip()
+                    etiquetas = row.get('etiquetas', '').strip()
+                    
+                    # Validar que tenga al menos anverso y reverso
+                    if not anverso or not reverso:
+                        errores.append(f'Fila {row_num}: Falta anverso o reverso')
+                        continue
+                    
+                    # Crear la tarjeta
+                    Tarjeta.objects.create(
+                        baraja=baraja,
+                        anverso=anverso,
+                        reverso=reverso,
+                        etiquetas=etiquetas
+                    )
+                    tarjetas_creadas += 1
+                    
+                except Exception as e:
+                    errores.append(f'Fila {row_num}: {str(e)}')
+            
+            # Mostrar resultado
+            mensaje_exito = f'✅ Se importaron {tarjetas_creadas} tarjetas correctamente'
+            return render(request, 'core/importar_csv.html', {
+                'exito': mensaje_exito,
+                'errores': errores if errores else None,
+                'barajas': Baraja.objects.filter(propietario=request.user)
+            })
+            
+        except Exception as e:
+            return render(request, 'core/importar_csv.html', {
+                'error': f'Error al procesar el archivo: {str(e)}',
+                'barajas': Baraja.objects.filter(propietario=request.user)
+            })
+    
+    # GET request - mostrar formulario
+    return render(request, 'core/importar_csv.html', {
+        'barajas': Baraja.objects.filter(propietario=request.user)
+    })
