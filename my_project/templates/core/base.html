@@ -44,20 +44,13 @@
                             <a class="nav-link" href="{% url 'core:buscar_tarjetas' %}">🔍 Buscar</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:importar_csv' %}">📥 Importar</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/">⚙️ Admin</a>
                         </li>
                     {% endif %}
                 </ul>
-                
-                <div class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <span class="navbar-text text-white me-3">Hola, {{ user.username }}</span>
-                        <a class="btn btn-outline-light btn-sm" href="{% url 'admin:logout' %}">Cerrar Sesión</a>
-                    {% else %}
-                        <a class="btn btn-outline-light btn-sm" href="{% url 'admin:login' %}">Iniciar Sesión</a>
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </nav>
 
