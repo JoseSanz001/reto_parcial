@@ -260,3 +260,45 @@ def importar_csv(request):
     return render(request, 'core/importar_csv.html', {
         'barajas': Baraja.objects.filter(propietario=request.user)
     })
+
+# Vista para exportar tarjetas a CSV
+@login_required
+def exportar_csv(request, baraja_id):
+    """
+    Exporta todas las tarjetas de una baraja a formato CSV.
+    """
+    import csv
+    from django.http import HttpResponse
+    
+    # Obtener la baraja (verificar que pertenece al usuario)
+    try:
+        baraja = Baraja.objects.get(id=baraja_id, propietario=request.user)
+    except Baraja.DoesNotExist:
+        return HttpResponse('Baraja no encontrada', status=404)
+    
+    # Crear la respuesta HTTP como archivo CSV
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{baraja.titulo}.csv"'
+    
+    # Configurar para usar UTF-8 con BOM (para que Excel lo abra correctamente)
+    response.write('\ufeff')  # BOM para UTF-8
+    
+    # Crear el escritor CSV
+    writer = csv.writer(response)
+    
+    # Escribir encabezados
+    writer.writerow(['anverso', 'reverso', 'etiquetas', 'extra', 'tipo'])
+    
+    # Escribir todas las tarjetas de la baraja
+    tarjetas = Tarjeta.objects.filter(baraja=baraja).order_by('fecha_creacion')
+    
+    for tarjeta in tarjetas:
+        writer.writerow([
+            tarjeta.anverso,
+            tarjeta.reverso,
+            tarjeta.etiquetas,
+            tarjeta.extra,
+            tarjeta.tipo
+        ])
+    
+    return response
