@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Buscar Tarjetas - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">🔍 Buscar Tarjetas</h1>
+    </div>
+</div>
+
+<!-- Formulario de búsqueda -->
+<div class="row mb-4">
+    <div class="col-12">
+        <form method="GET" action="{% url 'core:buscar_tarjetas' %}">
+            <div class="input-group input-group-lg">
+                <input type="text" 
+                       class="form-control" 
+                       name="q" 
+                       placeholder="Buscar por palabra, frase o etiqueta..." 
+                       value="{{ query }}"
+                       autofocus>
+                <button class="btn btn-primary" type="submit">
+                    🔍 Buscar
+                </button>
+            </div>
+            <small class="text-muted">Busca en el anverso, reverso o etiquetas de tus tarjetas</small>
+        </form>
+    </div>
+</div>
+
+<!-- Resultados de búsqueda -->
+{% if query %}
+    <div class="row">
+        <div class="col-12">
+            <h3>Resultados: {{ total_resultados }} tarjeta{{ total_resultados|pluralize }}</h3>
+            <hr>
+        </div>
+    </div>
+
+    {% if resultados %}
+        <div class="row">
+            {% for tarjeta in resultados %}
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <strong>📚 {{ tarjeta.baraja.titulo }}</strong>
+                        <span class="badge bg-primary float-end">{{ tarjeta.get_tipo_display }}</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ tarjeta.anverso }}</h5>
+                        <p class="card-text text-muted">{{ tarjeta.reverso }}</p>
+                        
+                        {% if tarjeta.etiquetas %}
+                        <p class="mb-2">
+                            <small class="text-muted">
+                                🏷️ {{ tarjeta.etiquetas }}
+                            </small>
+                        </p>
+                        {% endif %}
+                        
+                        {% if tarjeta.imagen %}
+                        <img src="{{ tarjeta.imagen.url }}" class="img-fluid" style="max-height: 150px;" alt="Imagen">
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'core:estudiar_baraja' tarjeta.baraja.id %}" class="btn btn-sm btn-primary">
+                            📖 Estudiar esta baraja
+                        </a>
+                        <a href="/admin/core/tarjeta/{{ tarjeta.id }}/change/" class="btn btn-sm btn-secondary">
+                            ✏️ Editar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h4>😕 No se encontraron resultados</h4>
+                    <p>No hay tarjetas que coincidan con "{{ query }}"</p>
+                    <p>Intenta con otros términos o etiquetas.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h4>💡 Sugerencias de búsqueda:</h4>
+                <ul>
+                    <li>Busca palabras específicas: "hello", "suma", "casa"</li>
+                    <li>Busca por etiquetas: "básico", "saludos", "comida"</li>
+                    <li>No distingue mayúsculas/minúsculas</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Botón para volver -->
+<div class="row mt-4">
+    <div class="col-12">
+        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">← Volver al Dashboard</a>
+    </div>
+</div>
+{% endblock %}
