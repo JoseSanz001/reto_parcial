@@ -134,3 +134,40 @@ def dashboard(request):
     }
     
     return render(request, 'core/dashboard.html', context)
+
+# Vista para buscar tarjetas
+@login_required
+def buscar_tarjetas(request):
+    """
+    Busca tarjetas por texto en anverso/reverso o por etiquetas.
+    """
+    query = request.GET.get('q', '')  # Obtener el término de búsqueda de la URL
+    resultados = []
+    
+    if query:
+        # Buscar en tarjetas del usuario (en anverso, reverso o etiquetas)
+        resultados = Tarjeta.objects.filter(
+            baraja__propietario=request.user  # Solo tarjetas del usuario
+        ).filter(
+            # Buscar en anverso O reverso O etiquetas
+            anverso__icontains=query  # icontains = insensible a mayúsculas
+        ) | Tarjeta.objects.filter(
+            baraja__propietario=request.user
+        ).filter(
+            reverso__icontains=query
+        ) | Tarjeta.objects.filter(
+            baraja__propietario=request.user
+        ).filter(
+            etiquetas__icontains=query
+        )
+        
+        # Eliminar duplicados y ordenar
+        resultados = resultados.distinct().order_by('baraja__titulo', 'anverso')
+    
+    context = {
+        'query': query,
+        'resultados': resultados,
+        'total_resultados': resultados.count() if resultados else 0
+    }
+    
+    return render(request, 'core/buscar_tarjetas.html', context)
