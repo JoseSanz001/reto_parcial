@@ -33,4 +33,7 @@ urlpatterns = [
     path('clases/<int:clase_id>/progreso/', views.progreso_clase, name='progreso_clase'),
     path('unirse-clase/', views.unirse_clase, name='unirse_clase'),
 
+    # Cambiar rol
+    path('cambiar-rol/', views.cambiar_rol, name='cambiar_rol'),
+
 ]
