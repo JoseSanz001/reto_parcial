@@ -1,0 +1,126 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cambiar Rol - QuizLet Anki{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">🔄 Cambiar Rol de Usuario</h1>
+    </div>
+</div>
+
+<!-- Información del rol actual -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h5>👤 Tu rol actual: <strong>{{ rol_actual|upper }}</strong></h5>
+            <p class="mb-0">Cambia tu rol para acceder a diferentes funcionalidades del sistema.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Explicación de roles -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📋 Descripción de Roles</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>🎓 <strong>Estudiante</strong></h6>
+                        <ul>
+                            <li>Crear y estudiar barajas personales</li>
+                            <li>Unirse a clases con código</li>
+                            <li>Completar tareas asignadas</li>
+                            <li>Ver su propio progreso</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <h6>👨‍🏫 <strong>Docente/Coach</strong></h6>
+                        <ul>
+                            <li>Todas las funciones de estudiante</li>
+                            <li>Crear y gestionar clases</li>
+                            <li>Asignar tareas a alumnos</li>
+                            <li>Ver progreso de todos los alumnos</li>
+                            <li>Generar códigos de invitación</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <h6>✏️ <strong>Colaborador/Editor</strong></h6>
+                        <ul>
+                            <li>Todas las funciones de estudiante</li>
+                            <li>Coeditar barajas compartidas</li>
+                            <li>Colaborar en contenido público</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <h6>⚙️ <strong>Administrador</strong></h6>
+                        <ul>
+                            <li>Acceso completo al sistema</li>
+                            <li>Gestión de usuarios y permisos</li>
+                            <li>Moderación de contenido</li>
+                            <li>Auditoría del sistema</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Formulario para cambiar rol -->
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Selecciona tu Nuevo Rol</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        {% for valor, nombre in opciones_rol %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" 
+                                   type="radio" 
+                                   name="rol" 
+                                   id="rol_{{ valor }}" 
+                                   value="{{ valor }}"
+                                   {% if rol_actual == valor %}checked{% endif %}
+                                   required>
+                            <label class="form-check-label" for="rol_{{ valor }}">
+                                <strong>{{ nombre }}</strong>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            🔄 Cambiar Rol
+                        </button>
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nota importante -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <strong>⚠️ Nota:</strong> En un entorno de producción real, solo los administradores deberían poder cambiar roles. Esta funcionalidad es solo para demostración.
+        </div>
+    </div>
+</div>
+{% endblock %}
