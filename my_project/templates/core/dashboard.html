@@ -9,6 +9,44 @@
     </div>
 </div>
 
+<!-- Nueva sección: Información del usuario y rol -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card {% if user.perfil.rol == 'docente' %}border-primary{% elif user.perfil.rol == 'estudiante' %}border-success{% endif %}">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-2">
+                            👤 Bienvenido, <strong>{{ user.username }}</strong>
+                        </h4>
+                        <p class="mb-0">
+                            <strong>Rol actual:</strong> 
+                            <span class="badge 
+                                {% if user.perfil.rol == 'docente' %}bg-primary
+                                {% elif user.perfil.rol == 'estudiante' %}bg-success
+                                {% elif user.perfil.rol == 'colaborador' %}bg-info
+                                {% else %}bg-danger{% endif %}">
+                                {{ user.perfil.get_rol_display }}
+                            </span>
+                            
+                            {% if user.perfil.rol == 'docente' %}
+                            <span class="ms-2">👨‍🏫 Tienes permisos para crear y gestionar clases</span>
+                            {% elif user.perfil.rol == 'estudiante' %}
+                            <span class="ms-2">🎓 Puedes unirte a clases y estudiar barajas</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'core:cambiar_rol' %}" class="btn btn-outline-primary">
+                            🔄 Cambiar Rol
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Tarjetas de estadísticas -->
 <div class="row">
     <!-- Total de barajas -->
