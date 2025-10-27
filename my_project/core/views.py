@@ -448,3 +448,42 @@ def progreso_clase(request, clase_id):
     }
     
     return render(request, 'core/progreso_clase.html', context)
+
+# Vista para cambiar el rol del usuario (solo para pruebas/demo)
+@login_required
+def cambiar_rol(request):
+    """
+    Permite al usuario cambiar su propio rol.
+    NOTA: En producción esto debería estar restringido solo a administradores.
+    """
+    if request.method == 'POST':
+        nuevo_rol = request.POST.get('rol')
+        
+        # Crear perfil si no existe
+        if not hasattr(request.user, 'perfil'):
+            from .models import PerfilUsuario
+            PerfilUsuario.objects.create(usuario=request.user, rol=nuevo_rol)
+        else:
+            # Actualizar el rol
+            request.user.perfil.rol = nuevo_rol
+            request.user.perfil.save()
+        
+        messages.success(request, f'Tu rol ha sido cambiado a: {request.user.perfil.get_rol_display()}')
+        return redirect('core:dashboard')
+    
+    # Obtener o crear perfil
+    if not hasattr(request.user, 'perfil'):
+        from .models import PerfilUsuario
+        PerfilUsuario.objects.create(usuario=request.user, rol='estudiante')
+    
+    context = {
+        'rol_actual': request.user.perfil.rol,
+        'opciones_rol': [
+            ('estudiante', 'Estudiante'),
+            ('docente', 'Docente/Coach'),
+            ('colaborador', 'Colaborador/Editor'),
+            ('administrador', 'Administrador'),
+        ]
+    }
+    
+    return render(request, 'core/cambiar_rol.html', context)
