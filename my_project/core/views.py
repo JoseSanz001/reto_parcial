@@ -1,3 +1,5 @@
+from django.contrib import messages
+from pyexpat.errors import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -456,12 +458,14 @@ def cambiar_rol(request):
     Permite al usuario cambiar su propio rol.
     NOTA: En producción esto debería estar restringido solo a administradores.
     """
+    from django.contrib import messages
+    from .models import PerfilUsuario
+    
     if request.method == 'POST':
         nuevo_rol = request.POST.get('rol')
         
         # Crear perfil si no existe
         if not hasattr(request.user, 'perfil'):
-            from .models import PerfilUsuario
             PerfilUsuario.objects.create(usuario=request.user, rol=nuevo_rol)
         else:
             # Actualizar el rol
@@ -473,7 +477,6 @@ def cambiar_rol(request):
     
     # Obtener o crear perfil
     if not hasattr(request.user, 'perfil'):
-        from .models import PerfilUsuario
         PerfilUsuario.objects.create(usuario=request.user, rol='estudiante')
     
     context = {
@@ -487,3 +490,117 @@ def cambiar_rol(request):
     }
     
     return render(request, 'core/cambiar_rol.html', context)
+
+# ==================== VISTAS DE AUTENTICACIÓN ====================
+
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
+
+# Vista de Login personalizada
+def login_view(request):
+    """
+    Página de inicio de sesión personalizada.
+    """
+    from django.contrib import messages
+    
+    if request.user.is_authenticated:
+        return redirect('core:dashboard')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        # Autenticar usuario
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # Login exitoso
+            auth_login(request, user)
+            messages.success(request, f'¡Bienvenido de nuevo, {user.username}!')
+            
+            # Redirigir a la página que intentaba acceder o al dashboard
+            next_url = request.GET.get('next', 'core:dashboard')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Usuario o contraseña incorrectos')
+    
+    return render(request, 'core/login.html', {})
+
+
+# Vista de Registro
+def registro_view(request):
+    """
+    Página de registro de nuevos usuarios.
+    """
+    from django.contrib import messages
+    from .models import PerfilUsuario
+    
+    if request.user.is_authenticated:
+        return redirect('core:dashboard')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        rol = request.POST.get('rol', 'estudiante')
+        
+        # Validaciones
+        if not username or not email or not password1:
+            messages.error(request, 'Todos los campos son obligatorios')
+            return render(request, 'core/registro.html', {})
+        
+        if password1 != password2:
+            messages.error(request, 'Las contraseñas no coinciden')
+            return render(request, 'core/registro.html', {})
+        
+        if len(password1) < 8:
+            messages.error(request, 'La contraseña debe tener al menos 8 caracteres')
+            return render(request, 'core/registro.html', {})
+        
+        # Verificar si el usuario ya existe
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'El nombre de usuario ya está en uso')
+            return render(request, 'core/registro.html', {})
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'El email ya está registrado')
+            return render(request, 'core/registro.html', {})
+        
+        # Crear el usuario
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1
+        )
+        
+        # El perfil se crea automáticamente por las señales
+        # Pero actualizamos el rol si es diferente de estudiante
+        if hasattr(user, 'perfil') and rol != 'estudiante':
+            user.perfil.rol = rol
+            user.perfil.save()
+        
+        # Login automático después del registro
+        auth_login(request, user)
+        messages.success(request, f'¡Bienvenido, {username}! Tu cuenta ha sido creada exitosamente')
+        
+        return redirect('core:dashboard')
+    
+    return render(request, 'core/registro.html', {})
+
+
+# Vista de Logout
+def logout_view(request):
+    """
+    Cierra la sesión del usuario.
+    """
+    from django.contrib import messages
+    
+    username = request.user.username if request.user.is_authenticated else ''
+    auth_logout(request)
+    
+    if username:
+        messages.success(request, f'¡Hasta pronto, {username}!')
+    
+    return redirect('core:login')

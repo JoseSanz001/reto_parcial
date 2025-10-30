@@ -128,9 +128,9 @@ MEDIA_URL = '/media/'  # URL para acceder a archivos subidos
 MEDIA_ROOT = BASE_DIR / 'media'  # Carpeta donde se guardan archivos subidos
 
 # Configuración de login (redirige a dashboard después de login)
-LOGIN_URL = '/admin/login/'  # URL para hacer login si no está autenticado
-LOGIN_REDIRECT_URL = '/'  # Redirigir al dashboard después del login exitoso
-LOGOUT_REDIRECT_URL = '/admin/'  # Redirigir al admin después del logout
+LOGIN_URL = 'core:login'  # Cambiar de '/admin/login/' a 'core:login'
+LOGIN_REDIRECT_URL = 'core:dashboard'  # Ya estaba así
+LOGOUT_REDIRECT_URL = 'core:login'  # Cambiar de '/admin/' a 'core:login'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

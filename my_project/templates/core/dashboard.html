@@ -125,29 +125,93 @@
     </div>
 </div>
 
-<!-- Acciones rápidas -->
+<!-- Acciones rápidas según el ROL -->
 <div class="row mt-4">
     <div class="col-12">
         <h3>🚀 Acciones Rápidas</h3>
     </div>
-    <div class="col-md-6">
+    
+    <!-- Para TODOS los roles -->
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Ver mis Barajas</h5>
+                <h5 class="card-title">📚 Mis Barajas</h5>
                 <p class="card-text">Gestiona y estudia tus barajas de tarjetas.</p>
-                <a href="{% url 'core:lista_barajas' %}" class="btn btn-primary">Ir a Barajas</a>
+                <a href="{% url 'core:lista_barajas' %}" class="btn btn-primary">Ver Barajas</a>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
+    
+    <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Panel de Administración</h5>
-                <p class="card-text">Crea barajas, tarjetas, clases y más.</p>
-                <a href="/admin/" class="btn btn-secondary">Ir al Admin</a>
+                <h5 class="card-title">🔍 Buscar</h5>
+                <p class="card-text">Busca tarjetas por contenido o etiquetas.</p>
+                <a href="{% url 'core:buscar_tarjetas' %}" class="btn btn-primary">Buscar</a>
             </div>
         </div>
     </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">📥 Importar</h5>
+                <p class="card-text">Importa tarjetas desde archivos CSV.</p>
+                <a href="{% url 'core:importar_csv' %}" class="btn btn-primary">Importar CSV</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Solo para DOCENTES y ADMINISTRADORES -->
+    {% if user.perfil.rol == 'docente' or user.perfil.rol == 'administrador' %}
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title">👨‍🏫 Gestionar Clases</h5>
+                <p class="card-text">Crea clases, asigna tareas y monitorea el progreso.</p>
+                <a href="{% url 'core:mis_clases' %}" class="btn btn-primary">Mis Clases</a>
+                <a href="/admin/core/clase/add/" class="btn btn-success mt-2">➕ Crear Clase</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title">📊 Panel Docente</h5>
+                <p class="card-text">Revisa el progreso de tus alumnos.</p>
+                <a href="{% url 'core:mis_clases' %}" class="btn btn-info">Ver Progreso</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Solo para ESTUDIANTES -->
+    {% if user.perfil.rol == 'estudiante' %}
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <h5 class="card-title">🎓 Mis Clases</h5>
+                <p class="card-text">Ve tus clases y tareas asignadas.</p>
+                <a href="{% url 'core:mis_clases' %}" class="btn btn-success">Ver Clases</a>
+                <a href="{% url 'core:unirse_clase' %}" class="btn btn-primary mt-2">➕ Unirse</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Para ADMINISTRADORES -->
+    {% if user.perfil.rol == 'administrador' %}
+    <div class="col-md-4">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h5 class="card-title">⚙️ Administración</h5>
+                <p class="card-text">Acceso completo al panel de administración.</p>
+                <a href="/admin/" class="btn btn-danger">Panel Admin</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Sesiones recientes -->
